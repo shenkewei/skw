@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-4.0.xsd
+        http://www.springframework.org/schema/context
+    	http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	<!-- Configuration -->
+	<util:properties id="configuration" location="classpath:Configuration.properties"/>
+	
+	<!-- Database Configuration: Use C3p0 as Connection Pool -->  
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">    	
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/news"/>
+        <property name="user" value="news"/>
+        <property name="password" value="news"/>
+        <property name="maxPoolSize" value="500"/>
+		<property name="minPoolSize" value="100"/>
+		<property name="initialPoolSize" value="100"/>
+		<property name="maxIdleTime" value="1000"/>
+		<property name="checkoutTimeout" value="1000"/>
+    </bean>
+    
+    <!-- Hibernate Configuration -->  
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource"/>  
+        <property name="hibernateProperties">
+            <props>
+            	<!-- Hibernate  -->
+            		<!-- Database -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>  
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.jdbc.batch_size">50</prop>
+                <prop key="hibernate.connection.characterEncoding">utf8</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+                <!-- Hibernate Search -->
+                <prop key="hibernate.search.default.directory_provider">filesystem</prop>
+                <prop key="hibernate.search.default.indexBase">${NewsMonitor}/Index</prop>                
+            </props>
+        </property>
+        <!-- 以下列表写入实体类 -->
+        <property name="packagesToScan">  
+            <list>
+				<value>model.entity</value>
+			</list>  
+        </property>
+        <!-- annotatedClasses -->
+    </bean>
+    
+	<context:component-scan base-package="model.dao" />
+	
+</beans>
